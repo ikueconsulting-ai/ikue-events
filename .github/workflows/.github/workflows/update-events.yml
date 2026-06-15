@@ -1,0 +1,39 @@
+name: Update events.json
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+
+jobs:
+  update-events:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate events.json
+        run: |
+          cat > events.json << 'EOF'
+          {
+            "events": [
+              {
+                "id": "example-1",
+                "title": "Sample Event",
+                "country": "TH",
+                "city": "Bangkok",
+                "date": "2026-06-30",
+                "location": "Ikue AgroTech",
+                "url": "https://ikue-agrotech.com",
+                "type": "conference"
+              }
+            ]
+          }
+          EOF
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update events.json"
+          file_pattern: "events.json"
