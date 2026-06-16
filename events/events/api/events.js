@@ -14,9 +14,6 @@ export default async function handler(req, res) {
   const location = continentMap[continent] || "Africa";
 
   const apiKey = process.env.EVENTBRITE_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: "Missing EVENTBRITE_API_KEY" });
-  }
 
   const url = new URL("https://www.eventbriteapi.com/v3/events/search/");
   url.searchParams.set("q", "agriculture");
@@ -30,15 +27,6 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
     });
-
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(response.status).json({
-        error: "Eventbrite API error",
-        status: response.status,
-        body: text,
-      });
-    }
 
     const data = await response.json();
 
@@ -59,14 +47,10 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       continent,
-      source: "eventbrite",
       count: events.length,
       events,
     });
   } catch (err) {
-    res.status(500).json({
-      error: "Server error",
-      message: err.message,
-    });
+    res.status(500).json({ error: err.message });
   }
 }
