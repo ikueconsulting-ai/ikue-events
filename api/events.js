@@ -1,49 +1,43 @@
-export default async function handler(req, res) {
-  const { continent = "Africa" } = req.query;
+import * as cheerio from "cheerio";
 
+export default async function handler(req, res) {
+  const { continent = "online" } = req.query;
+
+  // Mapping für spätere Erweiterung (z.B. Africa, Europe, Asia)
   const continentMap = {
-    Africa: "Africa",
-    Asia: "Asia",
-    Europe: "Europe",
-    NorthAmerica: "North America",
-    SouthAmerica: "South America",
-    Australia: "Australia",
-    Oceania: "Oceania",
+    online: "https://www.eventbrite.com/d/online/agriculture/",
+    Africa: "https://www.eventbrite.com/d/africa/agriculture/",
+    Europe: "https://www.eventbrite.com/d/europe/agriculture/",
+    Asia: "https://www.eventbrite.com/d/asia/agriculture/",
+    NorthAmerica: "https://www.eventbrite.com/d/north-america/agriculture/",
+    SouthAmerica: "https://www.eventbrite.com/d/south-america/agriculture/",
+    Oceania: "https://www.eventbrite.com/d/oceania/agriculture/",
+    Australia: "https://www.eventbrite.com/d/australia/agriculture/",
   };
 
-  const location = continentMap[continent] || "Africa";
-
-  const apiKey = process.env.EVENTBRITE_API_KEY;
-
-  const url = new URL("https://www.eventbriteapi.com/v3/events/search/");
-  url.searchParams.set("q", "agriculture");
-  url.searchParams.set("location.address", location);
-  url.searchParams.set("sort_by", "date");
-  url.searchParams.set("expand", "venue,organizer");
+  const url = continentMap[continent] || continentMap.online;
 
   try {
-    const response = await fetch(url.toString(), {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
+    const html = await fetch(url).then((r) => r.text());
+    const $ = cheerio.load(html);
+
+    const events = [];
+
+    $(".search-event-card-wrapper").each((i, el) => {
+      const title = $(el).find(".event-card__formatted-name--is-clamped").text().trim();
+      const date = $(el).find(".event-card__date").text().trim();
+      const link = "https://www.eventbrite.com" + $(el).find("a").attr("href");
+      const image = $(el).find("img").attr("src");
+
+      if (title) {
+        events.push({
+          title,
+          date,
+          link,
+          image,
+        });
+      }
     });
-
-    const data = await response.json();
-
-    const events = (data.events || []).map((e) => ({
-      id: e.id,
-      name: e.name?.text,
-      description: e.description?.text,
-      start: e.start?.local,
-      end: e.end?.local,
-      url: e.url,
-      venue: {
-        name: e.venue?.name,
-        city: e.venue?.address?.city,
-        country: e.venue?.address?.country,
-      },
-      organizer: e.organizer?.name,
-    }));
 
     res.status(200).json({
       continent,
@@ -54,4 +48,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-
