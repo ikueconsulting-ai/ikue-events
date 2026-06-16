@@ -1,67 +1,79 @@
 export const config = {
-  runtime: "nodejs",
+  runtime: "nodejs18.x",
 };
 
-import * as cheerio from "cheerio";
-
 export default async function handler(req, res) {
-  const { continent = "online" } = req.query;
-
-  const continentMap = {
-    online: "https://www.eventbrite.com/d/online/agriculture/",
-    Africa: "https://www.eventbrite.com/d/africa/agriculture/",
-    Europe: "https://www.eventbrite.com/d/europe/agriculture/",
-    Asia: "https://www.eventbrite.com/d/asia/agriculture/",
-    NorthAmerica: "https://www.eventbrite.com/d/north-america/agriculture/",
-    SouthAmerica: "https://www.eventbrite.com/d/south-america/agriculture/",
-    Oceania: "https://www.eventbrite.com/d/oceania/agriculture/",
-    Australia: "https://www.eventbrite.com/d/australia/agriculture/",
-  };
-
-  const url = continentMap[continent] || continentMap.online;
-
   try {
-    const html = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-    }).then((r) => r.text());
+    // FAO Event Feed (JSON)
+    const FAO_URL = "https://www.fao.org/api/events/en"; 
 
-    const $ = cheerio.load(html);
-    const events = [];
+    const response = await fetch(FAO_URL);
+    const data = await response.json();
 
-    $("a[href*='/e/']").each((i, el) => {
-      const link = "https://www.eventbrite.com" + $(el).attr("href");
+    const globalEvents = [];
+    const regionalEvents = {};
 
-      const title =
-        $(el).attr("aria-label") ||
-        $(el).find("div").first().text().trim() ||
-        $(el).text().trim();
+    // Hilfsfunktion: Land automatisch extrahieren
+    function extractCountry(location) {
+      if (!location) return "global";
 
-      const date =
-        $(el).find("time").attr("datetime") ||
-        $(el).find("time").text().trim() ||
-        "";
+      const lower = location.toLowerCase();
 
-      const image =
-        $(el).find("img").attr("src") ||
-        $(el).find("img").attr("data-src") ||
-        "";
-
-      if (title && link.includes("/e/")) {
-        events.push({
-          title,
-          date,
-          link,
-          image,
-        });
+      // Online / Virtual Events → global
+      if (
+        lower.includes("online") ||
+        lower.includes("virtual") ||
+        lower.includes("hybrid")
+      ) {
+        return "global";
       }
+
+      // Letztes Wort als Land nehmen
+      const parts = location.split(",");
+      const last = parts[parts.length - 1].trim().toLowerCase();
+
+      // Sonderzeichen entfernen
+      return last.replace(/[^a-z]/g, "");
+    }
+
+    // Events verarbeiten
+    data.events.forEach((event) => {
+      const title = event.title || "";
+      const date = event.date || "";
+      const location = event.location || "";
+      const link = event.url || "";
+      const image = event.image || "";
+
+      const country = extractCountry(location);
+
+      // GLOBAL EVENTS (alle Events)
+      globalEvents.push({
+        title,
+        date,
+        location,
+        country,
+        link,
+        image,
+      });
+
+      // REGIONALE EVENTS (nach Land gruppiert)
+      if (!regionalEvents[country]) {
+        regionalEvents[country] = [];
+      }
+
+      regionalEvents[country].push({
+        title,
+        date,
+        location,
+        country,
+        link,
+        image,
+      });
     });
 
     res.status(200).json({
-      continent,
-      count: events.length,
-      events,
+      global: globalEvents,
+      regional: regionalEvents,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
