@@ -3,7 +3,6 @@ import * as cheerio from "cheerio";
 export default async function handler(req, res) {
   const { continent = "online" } = req.query;
 
-  // Mapping für spätere Erweiterung (z.B. Africa, Europe, Asia)
   const continentMap = {
     online: "https://www.eventbrite.com/d/online/agriculture/",
     Africa: "https://www.eventbrite.com/d/africa/agriculture/",
@@ -18,18 +17,34 @@ export default async function handler(req, res) {
   const url = continentMap[continent] || continentMap.online;
 
   try {
-    const html = await fetch(url).then((r) => r.text());
-    const $ = cheerio.load(html);
+    const html = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
+    }).then((r) => r.text());
 
+    const $ = cheerio.load(html);
     const events = [];
 
-    $(".search-event-card-wrapper").each((i, el) => {
-      const title = $(el).find(".event-card__formatted-name--is-clamped").text().trim();
-      const date = $(el).find(".event-card__date").text().trim();
-      const link = "https://www.eventbrite.com" + $(el).find("a").attr("href");
-      const image = $(el).find("img").attr("src");
+    $("a[href*='/e/']").each((i, el) => {
+      const link = "https://www.eventbrite.com" + $(el).attr("href");
 
-      if (title) {
+      const title =
+        $(el).attr("aria-label") ||
+        $(el).find("div").first().text().trim() ||
+        $(el).text().trim();
+
+      const date =
+        $(el).find("time").attr("datetime") ||
+        $(el).find("time").text().trim() ||
+        "";
+
+      const image =
+        $(el).find("img").attr("src") ||
+        $(el).find("img").attr("data-src") ||
+        "";
+
+      if (title && link.includes("/e/")) {
         events.push({
           title,
           date,
