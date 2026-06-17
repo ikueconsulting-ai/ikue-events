@@ -1,49 +1,44 @@
+export default function handler(req, res) {
+  // CORS – WICHTIG für Wix LIVE
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-
-export default async function handler(req, res) {
-  try {
-    // Nur ein HARDCODED TEST, um zu prüfen, ob die Function läuft
-    const now = new Date().toISOString();
-
-    const globalEvents = [
+  // Deine Event-Daten
+  const data = {
+    global: [
       {
         title: "Test Global Event",
-        date: now,
+        date: "2026-06-17T08:00:05.829Z",
         location: "Online",
         country: "global",
         link: "https://www.ikueconsulting.com",
-        image: "",
-      },
-    ];
-
-    const regionalEvents = {
+        image: ""
+      }
+    ],
+    regional: {
       thailand: [
         {
           title: "Test Event Thailand",
-          date: now,
+          date: "2026-06-17T08:00:05.829Z",
           location: "Bangkok, Thailand",
           country: "thailand",
           link: "https://www.ikueconsulting.com",
-          image: "",
-        },
+          image: ""
+        }
       ],
       kenya: [
         {
           title: "Test Event Kenya",
-          date: now,
+          date: "2026-06-17T08:00:05.829Z",
           location: "Nairobi, Kenya",
           country: "kenya",
           link: "https://www.ikueconsulting.com",
-          image: "",
-        },
-      ],
-    };
+          image: ""
+        }
+      ]
+    }
+  };
 
-    res.status(200).json({
-      global: globalEvents,
-      regional: regionalEvents,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message || "Unknown error" });
-  }
+  res.status(200).json(data);
 }
