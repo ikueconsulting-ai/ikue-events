@@ -1,0 +1,5 @@
+{
+  "routes": [
+    { "src": "/global", "dest": "/global/index.html" }
+  ]
+}
