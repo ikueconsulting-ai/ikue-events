@@ -4,78 +4,48 @@ export const config = {
 
 export default async function handler(req, res) {
   try {
-    // FAO Event Feed (JSON)
-    const FAO_URL = "https://www.fao.org/api/events/en"; 
+    // Nur ein HARDCODED TEST, um zu prüfen, ob die Function läuft
+    const now = new Date().toISOString();
 
-    const response = await fetch(FAO_URL);
-    const data = await response.json();
+    const globalEvents = [
+      {
+        title: "Test Global Event",
+        date: now,
+        location: "Online",
+        country: "global",
+        link: "https://www.ikueconsulting.com",
+        image: "",
+      },
+    ];
 
-    const globalEvents = [];
-    const regionalEvents = {};
-
-    // Hilfsfunktion: Land automatisch extrahieren
-    function extractCountry(location) {
-      if (!location) return "global";
-
-      const lower = location.toLowerCase();
-
-      // Online / Virtual Events → global
-      if (
-        lower.includes("online") ||
-        lower.includes("virtual") ||
-        lower.includes("hybrid")
-      ) {
-        return "global";
-      }
-
-      // Letztes Wort als Land nehmen
-      const parts = location.split(",");
-      const last = parts[parts.length - 1].trim().toLowerCase();
-
-      // Sonderzeichen entfernen
-      return last.replace(/[^a-z]/g, "");
-    }
-
-    // Events verarbeiten
-    data.events.forEach((event) => {
-      const title = event.title || "";
-      const date = event.date || "";
-      const location = event.location || "";
-      const link = event.url || "";
-      const image = event.image || "";
-
-      const country = extractCountry(location);
-
-      // GLOBAL EVENTS (alle Events)
-      globalEvents.push({
-        title,
-        date,
-        location,
-        country,
-        link,
-        image,
-      });
-
-      // REGIONALE EVENTS (nach Land gruppiert)
-      if (!regionalEvents[country]) {
-        regionalEvents[country] = [];
-      }
-
-      regionalEvents[country].push({
-        title,
-        date,
-        location,
-        country,
-        link,
-        image,
-      });
-    });
+    const regionalEvents = {
+      thailand: [
+        {
+          title: "Test Event Thailand",
+          date: now,
+          location: "Bangkok, Thailand",
+          country: "thailand",
+          link: "https://www.ikueconsulting.com",
+          image: "",
+        },
+      ],
+      kenya: [
+        {
+          title: "Test Event Kenya",
+          date: now,
+          location: "Nairobi, Kenya",
+          country: "kenya",
+          link: "https://www.ikueconsulting.com",
+          image: "",
+        },
+      ],
+    };
 
     res.status(200).json({
       global: globalEvents,
       regional: regionalEvents,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || "Unknown error" });
   }
 }
