@@ -1,1 +1,101 @@
-https://ikue-events.vercel.app/global.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Global Events</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 26px;
+        color: #222;
+    }
+
+    .event-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid #e5e5e5;
+    }
+
+    .event-title {
+        font-size: 20px;
+        margin: 0 0 10px 0;
+        color: #111;
+        font-weight: bold;
+    }
+
+    .event-info {
+        margin: 6px 0;
+        color: #444;
+        font-size: 15px;
+    }
+
+    .event-link {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 10px 16px;
+        background: #0078ff;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .event-link:hover {
+        background: #005fcc;
+    }
+</style>
+</head>
+
+<body>
+
+<h2>Global Events</h2>
+<div id="events"></div>
+
+<script>
+async function loadEvents() {
+    try {
+        const res = await fetch("https://ikue-events.vercel.app/api/events");
+        const data = await res.json();
+
+        const events = data.global;
+        const container = document.getElementById("events");
+
+        events.forEach(ev => {
+            const card = document.createElement("div");
+            card.className = "event-card";
+
+            card.innerHTML = `
+                <div class="event-title">${ev.title}</div>
+                <div class="event-info"><strong>Date:</strong> ${new Date(ev.date).toLocaleString()}</div>
+                <div class="event-info"><strong>Location:</strong> ${ev.location}</div>
+                <div class="event-info"><strong>Country:</strong> ${ev.country}</div>
+                <a class="event-link" href="${ev.link}" target="_blank">View Event</a>
+            `;
+
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        document.getElementById("events").innerHTML =
+            "<p style='color:red; text-align:center;'>Error loading events.</p>";
+    }
+}
+
+loadEvents();
+</script>
+
+</body>
+</html>
