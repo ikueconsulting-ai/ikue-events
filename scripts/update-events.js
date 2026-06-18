@@ -1,10 +1,6 @@
-export default function handler(req, res) {
-  // CORS – WICHTIG für Wix LIVE
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  // Deine Event-Daten
+// scripts/update-events.js
+async function updateEvents() {
+  // Your event update logic here
   const data = {
     global: [
       {
@@ -40,5 +36,11 @@ export default function handler(req, res) {
     }
   };
 
-  res.status(200).json(data);
+  // Write to file, update database, etc.
+  console.log('Events updated:', JSON.stringify(data, null, 2));
 }
+
+updateEvents().catch(err => {
+  console.error('Error updating events:', err);
+  process.exit(1);
+});
