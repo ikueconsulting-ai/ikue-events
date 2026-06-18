@@ -11,8 +11,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Debug - List files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents of scripts directory:"
+          ls -la scripts/ || echo "scripts directory not found"
+          echo "Current git branch:"
+          git branch -a
+          echo "Current git ref:"
+          git rev-parse HEAD
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -20,7 +31,9 @@ jobs:
           node-version: '20'
 
       - name: Run Script
-        run: node scripts/update-events.js
+        run: |
+          echo "Running update-events.js..."
+          node scripts/update-events.js
 
       - name: Commit Changes
         run: |
