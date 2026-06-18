@@ -1,4 +1,4 @@
-name: Update Agricultural Events
+name: TEST IKUE WORKFLOW
 
 on:
   workflow_dispatch:
