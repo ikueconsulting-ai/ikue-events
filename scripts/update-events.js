@@ -1,11 +1,13 @@
 // scripts/update-events.js
+const fs = require('fs');
+const path = require('path');
+
 async function updateEvents() {
-  // Your event update logic here
   const data = {
     global: [
       {
         title: "Test Global Event",
-        date: "2026-06-17T08:00:05.829Z",
+        date: new Date().toISOString(),
         location: "Online",
         country: "global",
         link: "https://www.ikueconsulting.com",
@@ -16,7 +18,7 @@ async function updateEvents() {
       thailand: [
         {
           title: "Test Event Thailand",
-          date: "2026-06-17T08:00:05.829Z",
+          date: new Date().toISOString(),
           location: "Bangkok, Thailand",
           country: "thailand",
           link: "https://www.ikueconsulting.com",
@@ -26,7 +28,7 @@ async function updateEvents() {
       kenya: [
         {
           title: "Test Event Kenya",
-          date: "2026-06-17T08:00:05.829Z",
+          date: new Date().toISOString(),
           location: "Nairobi, Kenya",
           country: "kenya",
           link: "https://www.ikueconsulting.com",
@@ -36,7 +38,9 @@ async function updateEvents() {
     }
   };
 
-  // Write to file, update database, etc.
+  // Write to file
+  const eventsFile = path.join(__dirname, '../events.json');
+  fs.writeFileSync(eventsFile, JSON.stringify(data, null, 2));
   console.log('Events updated:', JSON.stringify(data, null, 2));
 }
 
