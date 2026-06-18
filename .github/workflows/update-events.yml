@@ -8,14 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
 
       - name: Run Script
         run: node scripts/update-events.js
@@ -25,7 +24,7 @@ jobs:
           git config --global user.name "Ikue Event Bot"
           git config --global user.email "bot@ikueconsulting.com"
 
-          git add events/*.json
+          git add .
 
           git diff --quiet && git diff --staged --quiet || git commit -m "Auto update events"
 
